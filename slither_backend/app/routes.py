@@ -92,19 +92,34 @@ def generate_pdf_report(report):
     # Add content to the PDF
     pdf.set_font("Arial", size=12)
     pdf.ln(10)  # Add a line break
-    for key, value in report.items():
+
+    # Contract analyzed
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(200, 10, txt=f"Contract Analyzed: {report['contract_analyzed']}", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Total Contracts: {report['total_contracts']}", ln=True)
+    pdf.cell(200, 10, txt=f"Total Detectors: {report['total_detectors']}", ln=True)
+    pdf.cell(200, 10, txt=f"Total Issues Found: {report['total_issues_found']}", ln=True)
+
+    # Detectors
+    pdf.ln(10)  # Add a line break
+    for detector in report['detectors']:
         pdf.set_font("Arial", style="B", size=12)
-        pdf.cell(200, 10, txt=f"{key.capitalize()}:", ln=True)
+        pdf.cell(200, 10, txt=f"Detector Type: {detector['type']}", ln=True)
         pdf.set_font("Arial", size=12)
-        if isinstance(value, list):
-            for item in value:
-                pdf.cell(200, 10, txt=f"  - {item}", ln=True)
-        elif isinstance(value, dict):
-            for sub_key, sub_value in value.items():
-                pdf.cell(200, 10, txt=f"  {sub_key}: {sub_value}", ln=True)
-        else:
-            pdf.cell(200, 10, txt=str(value), ln=True)
-        pdf.ln(5)
+        pdf.cell(200, 10, txt=f"Issue: {detector['issue']}", ln=True)
+        
+        if 'affected_parameters' in detector:
+            pdf.cell(200, 10, txt="Affected Parameters:", ln=True)
+            for param in detector['affected_parameters']:
+                pdf.cell(200, 10, txt=f"  - {param}", ln=True)
+        elif 'affected_variables' in detector:
+            pdf.cell(200, 10, txt="Affected Variables:", ln=True)
+            for var in detector['affected_variables']:
+                pdf.cell(200, 10, txt=f"  - {var}", ln=True)
+
+        pdf.cell(200, 10, txt=f"Reference: {detector['reference']}", ln=True)
+        pdf.ln(5)  # Line break after each detector section
 
     # Save the PDF to a file
     pdf_file_path = "analysis_report.pdf"

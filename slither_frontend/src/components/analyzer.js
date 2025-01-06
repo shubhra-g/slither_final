@@ -68,7 +68,7 @@ const SolidityAnalyse = () => {
 
   const openInNewWindow = (result) => {
     const reportWindow = window.open("", "_blank");
-    
+
     // Format the result for display
     const formattedResult = JSON.stringify(result, null, 2);
 
@@ -76,6 +76,43 @@ const SolidityAnalyse = () => {
       `<html>
         <head>
           <title>Analysis Report</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              background-color: #f4f7f6;
+            }
+            h1 {
+              color: #333;
+            }
+            pre {
+              background-color: #282c34;
+              color: #fff;
+              padding: 10px;
+              border-radius: 5px;
+              font-size: 14px;
+              white-space: pre-wrap;
+              word-wrap: break-word;
+            }
+            #download-btn {
+              margin-top: 20px;
+              padding: 10px 20px;
+              background-color: #00FFA3;
+              color: white;
+              border: none;
+              font-size: 16px;
+              border-radius: 5px;
+              cursor: pointer;
+              transition: background-color 0.3s ease;
+            }
+            #download-btn:hover {
+              background-color: #00cc82;
+            }
+            #download-btn:focus {
+              outline: none;
+            }
+          </style>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         </head>
         <body>
           <h1>Smart Contract Analysis Report</h1>
@@ -83,6 +120,7 @@ const SolidityAnalyse = () => {
           <button id="download-btn">Download Report</button>
           <script>
             document.getElementById("download-btn").addEventListener("click", function() {
+              const { jsPDF } = window.jspdf;
               const doc = new jsPDF();
               doc.setFontSize(12);
               doc.text("Smart Contract Analysis Report", 10, 10);

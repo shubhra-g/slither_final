@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { jsPDF } from "jspdf";
 import styles from "./analyzer.module.css";
 import Button from "./ui/Button";
 
@@ -55,6 +56,9 @@ const SolidityAnalyse = () => {
 
       const result = await response.json();
       setAnalysisResult(result); // Save the analysis result to display
+
+      // Open the report in a new window
+      openInNewWindow(result); // Pass the result to the new window
     } catch (error) {
       alert(`Error: ${error.message}`);
     } finally {
@@ -62,46 +66,66 @@ const SolidityAnalyse = () => {
     }
   };
 
+  const openInNewWindow = (result) => {
+    const reportWindow = window.open("", "_blank");
+    
+    // Format the result for display
+    const formattedResult = JSON.stringify(result, null, 2);
+
+    reportWindow.document.write(
+      `<html>
+        <head>
+          <title>Analysis Report</title>
+        </head>
+        <body>
+          <h1>Smart Contract Analysis Report</h1>
+          <pre>${formattedResult}</pre>
+          <button id="download-btn">Download Report</button>
+          <script>
+            document.getElementById("download-btn").addEventListener("click", function() {
+              const doc = new jsPDF();
+              doc.setFontSize(12);
+              doc.text("Smart Contract Analysis Report", 10, 10);
+              doc.text(${JSON.stringify(formattedResult)}, 10, 20);
+              doc.save("analysis_report.pdf");
+            });
+          </script>
+        </body>
+      </html>`
+    );
+    reportWindow.document.close();
+  };
+
   return (
-    <>
-      <div className={styles.container}>
-        <h1 className={styles.title}>
-          ScanSecure <span style={{ color: "#00FFA3" }}>Analyzer</span>
-        </h1>
-        <p className={styles.description}>
-          Paste your smart contract code below or upload a Solidity file to start scanning.
+    <div className={styles.container}>
+      <h1 className={styles.title}>
+        ScanSecure <span style={{ color: "#00FFA3" }}>Analyzer</span>
+      </h1>
+      <p className={styles.description}>
+        Paste your smart contract code below or upload a Solidity file to start scanning.
+      </p>
+
+      {/* Textarea for pasting Solidity code */}
+      <textarea
+        className={styles.textArea}
+        placeholder="Paste your Solidity contract code here..."
+        value={contractCode}
+        onChange={(e) => setContractCode(e.target.value)}
+      />
+
+      {/* Dropzone for file upload */}
+      <div {...getRootProps()} className={styles.dropzone}>
+        <input {...getInputProps()} />
+        <p>
+          Drag & drop your Solidity file here, or{" "}
+          <span className={styles.link}>click to upload</span>.
         </p>
-
-        {/* Textarea for pasting Solidity code */}
-        <textarea
-          className={styles.textArea}
-          placeholder="Paste your Solidity contract code here..."
-          value={contractCode}
-          onChange={(e) => setContractCode(e.target.value)}
-        />
-
-        {/* Dropzone for file upload */}
-        <div {...getRootProps()} className={styles.dropzone}>
-          <input {...getInputProps()} />
-          <p>
-            Drag & drop your Solidity file here, or{" "}
-            <span className={styles.link}>click to upload</span>.
-          </p>
-          {uploadContract && <p className={styles.fileName}>Uploaded File: {uploadContract.name}</p>}
-        </div>
-
-        {/* Submit button */}
-        <Button onClick={submitContract} text={loading ? "Scanning..." : "Submit"} disabled={loading} />
-
-        {/* Displaying analysis results */}
-        {analysisResult && (
-          <div className={styles.result}>
-            <h2>Analysis Report</h2>
-            <pre>{JSON.stringify(analysisResult, null, 2)}</pre>
-          </div>
-        )}
+        {uploadContract && <p className={styles.fileName}>Uploaded File: {uploadContract.name}</p>}
       </div>
-    </>
+
+      {/* Submit button */}
+      <Button onClick={submitContract} text={loading ? "Scanning..." : "Submit"} disabled={loading} />
+    </div>
   );
 };
 
